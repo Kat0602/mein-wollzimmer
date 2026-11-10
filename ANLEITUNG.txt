@@ -1,9 +1,7 @@
-MEIN WOLLZIMMER – VERSION 3
+MEIN WOLLZIMMER – VERSION 4
 
-GitHub Pages: Neues öffentliches Repository, z. B. mein-wollzimmer, anlegen. Die Dateien AUS DIESEM ORDNER (nicht den Ordner selbst) hochladen. Settings > Pages > Deploy from a branch > main > /(root) > Save. Nach der Veröffentlichung die Adresse https://DEINBENUTZERNAME.github.io/mein-wollzimmer/ auf dem iPhone in Safari öffnen und über Teilen > Zum Home-Bildschirm hinzufügen.
+UPDATE: Alle sieben Dateien in das BESTEHENDE GitHub-Repository mein-wollzimmer hochladen und gleichnamige Dateien ersetzen. Kein neues Repository erstellen. GitHub Pages bleibt unverändert. Nach Veröffentlichung die App ggf. schließen und neu öffnen bzw. Seite aktualisieren.
 
-Die App enthält Garnsorten mit mehreren Farben und separaten Mengen, Nadeln (einschließlich tunesischer Häkelnadeln), Zubehör, Projekte und JSON-Sicherung. Alle Angaben sind optional, soweit möglich. Für jede Farbe kann der Bestand als 'noch nicht gezählt' markiert werden. Restgramm = erfasste Gesamtgramm minus verbrauchte Gramm. Ganze Knäuel werden separat notiert und NICHT automatisch aus Gramm berechnet.
+WICHTIG: Die bestehende Datenspeicherung bleibt unter dem bisherigen Schlüssel mein-wollzimmer-v3, damit vorhandene Einträge erhalten bleiben. Vor Updates mit bereits erfassten Daten immer die Sicherung exportieren.
 
-ACHTUNG: Lokale Daten sind geräte- und browsergebunden. Bei Löschen der Website-Daten oder Gerätewechsel können Einträge verloren gehen. Regelmäßig unter 'Sicherung' exportieren und die JSON-Datei sicher ablegen. Keine automatische Cloud-Synchronisation.
-
-Version 3 ist eine eigenständige App. Nicht die Dateien der Bücher-App überschreiben. Wenn schon Daten in einer älteren Wollzimmer-App erfasst wurden, werden diese nicht automatisch übernommen.
+NEU: Bei „Garnsorte hinzufügen“ und „Farbe hinzufügen“ kann ein Banderolenfoto ausgewählt und Text erkannt werden. Beim ersten Erkennen braucht es eine Internetverbindung: Die Tesseract-Texterkennungsbibliothek und Sprachdaten werden nachgeladen. Das Foto wird im Browser verarbeitet, nicht auf einen eigenen Server hochgeladen. Die Vorschläge sind unvollständig oder fehlerhaft möglich; bitte alles kontrollieren. Farbe und Knäuelanzahl sind ggf. manuell einzutragen. Die Funktion ist kein Barcode-Produktkatalog.
