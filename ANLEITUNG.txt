@@ -1,0 +1,9 @@
+MEIN WOLLZIMMER – VERSION 3
+
+GitHub Pages: Neues öffentliches Repository, z. B. mein-wollzimmer, anlegen. Die Dateien AUS DIESEM ORDNER (nicht den Ordner selbst) hochladen. Settings > Pages > Deploy from a branch > main > /(root) > Save. Nach der Veröffentlichung die Adresse https://DEINBENUTZERNAME.github.io/mein-wollzimmer/ auf dem iPhone in Safari öffnen und über Teilen > Zum Home-Bildschirm hinzufügen.
+
+Die App enthält Garnsorten mit mehreren Farben und separaten Mengen, Nadeln (einschließlich tunesischer Häkelnadeln), Zubehör, Projekte und JSON-Sicherung. Alle Angaben sind optional, soweit möglich. Für jede Farbe kann der Bestand als 'noch nicht gezählt' markiert werden. Restgramm = erfasste Gesamtgramm minus verbrauchte Gramm. Ganze Knäuel werden separat notiert und NICHT automatisch aus Gramm berechnet.
+
+ACHTUNG: Lokale Daten sind geräte- und browsergebunden. Bei Löschen der Website-Daten oder Gerätewechsel können Einträge verloren gehen. Regelmäßig unter 'Sicherung' exportieren und die JSON-Datei sicher ablegen. Keine automatische Cloud-Synchronisation.
+
+Version 3 ist eine eigenständige App. Nicht die Dateien der Bücher-App überschreiben. Wenn schon Daten in einer älteren Wollzimmer-App erfasst wurden, werden diese nicht automatisch übernommen.
