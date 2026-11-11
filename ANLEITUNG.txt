@@ -1,8 +1,6 @@
-Mein Wollzimmer – Version 5
+Mein Wollzimmer – Version 6
 
-Alle Dateien im bestehenden GitHub-Repository hochladen und Änderungen bestätigen.
-Vorher in der App unter „Sicherung“ eine JSON-Sicherung herunterladen.
-
-NEU: Bei Garnsorten und Farben mehrere Fotos einer Banderole hinzufügen, gemeinsam per Texterkennung auswerten, erkannten Text kontrollieren und Vorschläge übernehmen.
-
-Hinweis: Texterkennung benötigt beim ersten Aufruf Internet. Die Bilder werden lokal verarbeitet; die Erkennung ist nicht fehlerfrei. Die gespeicherten Bestandsdaten verwenden weiterhin denselben lokalen Speicher-Schlüssel.
+Alle Dateien ins bestehende GitHub-Repository hochladen.
+Mehrfachfotos werden jetzt vor der OCR in zwei Bildvarianten aufbereitet.
+Falls die Erkennung weiterhin fehlerhaft ist: In der iPhone-Fotos-App Text aus dem Banderolenfoto kopieren, in das Textfeld der App einfügen und „Angaben in Formular übernehmen“ tippen.
+Die Datenspeicherung verwendet weiterhin denselben Schlüssel.

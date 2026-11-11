@@ -20,7 +20,7 @@ function wire(){document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=
 function addScanControl(collection){
  const formEl=$('editForm');if(!formEl)return;
  const panel=document.createElement('div');panel.className='scan-panel';
- panel.innerHTML=`<details open><summary>📷 Banderole mit mehreren Fotos erfassen</summary><p class="muted">Fotografiere die Banderole von allen nötigen Seiten. Du kannst beliebig viele Bilder nacheinander hinzufügen. Alle Bilder werden gemeinsam ausgewertet; die erkannten Angaben bitte kontrollieren.</p><label>Weitere Fotos aufnehmen oder auswählen<input type="file" id="labelPhotos" accept="image/*" multiple></label><div id="photoList" class="muted" aria-live="polite">Noch keine Fotos ausgewählt.</div><div class="actions"><button type="button" id="scanLabel">Alle Fotos auswerten</button><button type="button" id="clearPhotos">Fotos entfernen</button></div><p id="scanStatus" class="muted" role="status"></p><details id="scanTextBox" class="hidden" open><summary>Erkannten Text kontrollieren / verbessern</summary><textarea id="scanText" rows="9" placeholder="Erkannter Text aus allen Bildern"></textarea><div class="actions"><button type="button" id="applyScan">Angaben in Formular übernehmen</button></div></details></details>`;
+ panel.innerHTML=`<details open><summary>📷 Banderole mit mehreren Fotos erfassen</summary><p class="muted">Fotografiere die Banderole von allen nötigen Seiten. Du kannst beliebig viele Bilder nacheinander hinzufügen. Alle Bilder werden gemeinsam ausgewertet; die erkannten Angaben bitte kontrollieren.</p><label>Weitere Fotos aufnehmen oder auswählen<input type="file" id="labelPhotos" accept="image/*" multiple></label><div id="photoList" class="muted" aria-live="polite">Noch keine Fotos ausgewählt.</div><p class="muted">Tipp: Banderole möglichst gerade und bei hellem Licht fotografieren. Bei kleinen Schriften hilft die iPhone-Funktion „Text erkennen“ in der Fotos-App: Text kopieren und unten einfügen.</p><div class="actions"><button type="button" id="scanLabel">Alle Fotos auswerten</button><button type="button" id="clearPhotos">Fotos entfernen</button></div><p id="scanStatus" class="muted" role="status"></p><details id="scanTextBox" open><summary>Erkannten Text kontrollieren / verbessern</summary><textarea id="scanText" rows="9" placeholder="Erkannter Text aus allen Bildern – oder hier den mit dem iPhone kopierten Text einfügen"></textarea><div class="actions"><button type="button" id="applyScan">Angaben in Formular übernehmen</button></div></details></details>`;
  formEl.insertBefore(panel,formEl.firstChild);
  const files=[], input=panel.querySelector('#labelPhotos'),status=panel.querySelector('#scanStatus'),scanButton=panel.querySelector('#scanLabel'),list=panel.querySelector('#photoList');
  const updateList=()=>{list.replaceChildren();if(!files.length){list.textContent='Noch keine Fotos ausgewählt.';return;}files.forEach((f,i)=>{const line=document.createElement('div');line.style.margin='6px 0';const name=document.createElement('span');name.textContent=`${i+1}. ${f.name} (${Math.round(f.size/1024)} KB) `;const remove=document.createElement('button');remove.type='button';remove.textContent='Entfernen';remove.onclick=()=>{files.splice(i,1);updateList()};line.append(name,remove);list.appendChild(line)})};
@@ -28,11 +28,59 @@ function addScanControl(collection){
  panel.querySelector('#clearPhotos').onclick=()=>{files.length=0;updateList();status.textContent='Fotos entfernt.'};
  scanButton.onclick=async()=>{if(!files.length){status.textContent='Bitte zuerst mindestens ein Foto auswählen.';return;}scanButton.disabled=true;let worker;
  try{if(!window.Tesseract){status.textContent='Texterkennung wird geladen (Internet erforderlich) …';await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';sc.onload=resolve;sc.onerror=()=>reject(Error('Texterkennung konnte nicht geladen werden.'));document.head.appendChild(sc)})}
- worker=await Tesseract.createWorker('deu+eng');const texts=[];let failed=0;
- for(let i=0;i<files.length;i++){status.textContent=`Foto ${i+1} von ${files.length} wird ausgewertet …`;try{const result=await worker.recognize(files[i]);const t=result.data.text||'';if(t.trim())texts.push(`--- Foto ${i+1} ---\n${t}`);else failed++}catch(e){failed++}}
- const box=panel.querySelector('#scanTextBox');box.classList.remove('hidden');const area=panel.querySelector('#scanText');area.value=texts.join('\n\n');status.textContent=`${texts.length} von ${files.length} Foto(s) mit Text erkannt${failed?' · '+failed+' ohne verwertbaren Text':''}. Text prüfen und Angaben übernehmen.`;
+ worker=await Tesseract.createWorker('deu+eng');
+ await worker.setParameters({preserve_interword_spaces:'1'});
+ const texts=[];let failed=0;
+ for(let i=0;i<files.length;i++){
+  status.textContent=`Foto ${i+1} von ${files.length}: Bild wird verbessert und Text erkannt …`;
+  try{
+   const variants=await prepareLabelImage(files[i]);
+   let best={text:'',score:-Infinity};
+   for(const variant of variants){
+    const result=await worker.recognize(variant);
+    const candidate=result.data.text||'';
+    const confidence=result.data.confidence||0;
+    const score=scoreLabelText(candidate,confidence);
+    if(score>best.score)best={text:candidate,score};
+   }
+   if(best.text.trim())texts.push(`--- Foto ${i+1} ---\n${best.text}`);else failed++;
+  }catch(e){failed++}
+ }
+ const box=panel.querySelector('#scanTextBox');box.classList.remove('hidden');const area=panel.querySelector('#scanText');area.value=texts.join('\n\n');status.textContent=`${texts.length} von ${files.length} Foto(s) mit Text erkannt${failed?' · '+failed+' ohne verwertbaren Text':''}. Text prüfen und Angaben übernehmen. Falls Buchstabensalat erscheint: In der iPhone-Fotos-App Text markieren, kopieren und hier einfügen.`;
  }catch(err){status.textContent='Erkennung fehlgeschlagen: '+err.message+'. Angaben können weiterhin von Hand eingegeben werden.'}finally{if(worker)await worker.terminate().catch(()=>{});scanButton.disabled=false}};
  panel.querySelector('#applyScan').onclick=()=>{const raw=panel.querySelector('#scanText').value;const suggestions=scanSuggestions(raw,collection);let count=0;for(const [key,value] of Object.entries(suggestions)){const field=formEl.elements[key];if(field&&value!==undefined&&value!==''&&(!field.value||confirm('Das bereits ausgefüllte Feld „'+key+'“ durch „'+value+'“ ersetzen?'))){field.value=value;count++}}status.textContent=count+' Feld(er) übernommen. Bitte alle Angaben prüfen und anschließend speichern.'};
+}
+// Bildaufbereitung für kleine, kontrastarme Beschriftungen auf Banderolen.
+async function prepareLabelImage(file){
+ const bitmap=await createImageBitmap(file);
+ try{
+  const scale=Math.min(3,Math.max(1,2200/Math.max(bitmap.width,bitmap.height)));
+  const w=Math.round(bitmap.width*scale),h=Math.round(bitmap.height*scale);
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,w,h);
+  const original=canvas.toDataURL('image/png');
+  const pixels=ctx.getImageData(0,0,w,h),d=pixels.data;
+  // Kontraststreckung mit Graustufen: verbessert schwach gedruckte Banderolentexte.
+  let min=255,max=0;const lum=new Uint8Array(w*h);
+  for(let j=0,k=0;j<d.length;j+=4,k++){
+   const v=Math.round(.299*d[j]+.587*d[j+1]+.114*d[j+2]);lum[k]=v;
+   if(v<min)min=v;if(v>max)max=v;
+  }
+  const range=Math.max(45,max-min);
+  for(let j=0,k=0;j<d.length;j+=4,k++){
+   const v=Math.max(0,Math.min(255,Math.round((lum[k]-min)*255/range)));
+   d[j]=d[j+1]=d[j+2]=v;
+  }
+  ctx.putImageData(pixels,0,0);
+  return [original,canvas.toDataURL('image/png')];
+ }finally{bitmap.close()}
+}
+function scoreLabelText(text,confidence){
+ const words=text.match(/[A-Za-zÄÖÜäöüß]{3,}/g)||[];
+ const meaningful=words.filter(x=>/^[A-Za-zÄÖÜäöüß]+$/.test(x)).length;
+ const expected=(text.match(/(?:gr[üu]ndl|polyacryl|polyester|baumwolle|merino|wolle|farbe|partie|meter|\d+\s*%|\d+\s*g|\d+\s*m)/gi)||[]).length;
+ return confidence*.7+Math.min(meaningful,60)*.3+expected*8;
 }
 function scanSuggestions(raw,collection){
  const t=raw.replace(/\r/g,'').replace(/--- Foto \d+ ---/g,'');const out={};let m;
