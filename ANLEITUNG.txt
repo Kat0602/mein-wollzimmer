@@ -1,7 +1,8 @@
-MEIN WOLLZIMMER – VERSION 4
+Mein Wollzimmer – Version 5
 
-UPDATE: Alle sieben Dateien in das BESTEHENDE GitHub-Repository mein-wollzimmer hochladen und gleichnamige Dateien ersetzen. Kein neues Repository erstellen. GitHub Pages bleibt unverändert. Nach Veröffentlichung die App ggf. schließen und neu öffnen bzw. Seite aktualisieren.
+Alle Dateien im bestehenden GitHub-Repository hochladen und Änderungen bestätigen.
+Vorher in der App unter „Sicherung“ eine JSON-Sicherung herunterladen.
 
-WICHTIG: Die bestehende Datenspeicherung bleibt unter dem bisherigen Schlüssel mein-wollzimmer-v3, damit vorhandene Einträge erhalten bleiben. Vor Updates mit bereits erfassten Daten immer die Sicherung exportieren.
+NEU: Bei Garnsorten und Farben mehrere Fotos einer Banderole hinzufügen, gemeinsam per Texterkennung auswerten, erkannten Text kontrollieren und Vorschläge übernehmen.
 
-NEU: Bei „Garnsorte hinzufügen“ und „Farbe hinzufügen“ kann ein Banderolenfoto ausgewählt und Text erkannt werden. Beim ersten Erkennen braucht es eine Internetverbindung: Die Tesseract-Texterkennungsbibliothek und Sprachdaten werden nachgeladen. Das Foto wird im Browser verarbeitet, nicht auf einen eigenen Server hochgeladen. Die Vorschläge sind unvollständig oder fehlerhaft möglich; bitte alles kontrollieren. Farbe und Knäuelanzahl sind ggf. manuell einzutragen. Die Funktion ist kein Barcode-Produktkatalog.
+Hinweis: Texterkennung benötigt beim ersten Aufruf Internet. Die Bilder werden lokal verarbeitet; die Erkennung ist nicht fehlerfrei. Die gespeicherten Bestandsdaten verwenden weiterhin denselben lokalen Speicher-Schlüssel.
