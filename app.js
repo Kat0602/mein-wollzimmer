@@ -82,22 +82,149 @@ function scoreLabelText(text,confidence){
  const expected=(text.match(/(?:gr[üu]ndl|polyacryl|polyester|baumwolle|merino|wolle|farbe|partie|meter|\d+\s*%|\d+\s*g|\d+\s*m)/gi)||[]).length;
  return confidence*.7+Math.min(meaningful,60)*.3+expected*8;
 }
-function scanSuggestions(raw,collection){
- const t=raw.replace(/\r/g,'').replace(/--- Foto \d+ ---/g,'');const out={};let m;
- if(collection==='yarns'){
- const brands=['Gründl','DROPS','Lana Grossa','Schachenmayr','Lang Yarns','Rico Design','Hobbii','ONline','Katia','Woll Butt','Pro Lana','Scheepjes','Alize','YarnArt'];for(const b of brands){if(t.toLocaleLowerCase('de').includes(b.toLocaleLowerCase('de'))){out.brand=b;break;}}
- const lines=t.split('\n').map(x=>x.trim()).filter(Boolean);
- if(out.brand){const ix=lines.findIndex(x=>x.toLowerCase().includes(out.brand.toLowerCase()));if(ix>=0){let name=lines[ix].replace(new RegExp(out.brand.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),'').trim();if(!name&&lines[ix+1])name=lines[ix+1];if(name&&name.length<65&&!/^(?:100\s*%|made in|www\.|farbe|color|partie|lot|\d+\s*[gm])/.test(name.toLowerCase()))out.name=name;}}
- if((m=t.match(/(\d{2,4})\s*(?:m|meter)\s*[/=~–-]\s*(\d{1,3})\s*g\b/i))){out.length=m[1];out.weight=m[2];}
- else if((m=t.match(/(\d{1,3})\s*g\s*[/=~–-]\s*(\d{2,4})\s*(?:m|meter)\b/i))){out.weight=m[1];out.length=m[2];}
- else {if((m=t.match(/\b(25|50|100|150|200|250|500)\s*g\b/i)))out.weight=m[1];if((m=t.match(/\b(\d{2,4})\s*(?:m|meter)\b/i)))out.length=m[1];}
- if((m=t.match(/(?:nadel(?:stärke)?|needle|hook|häkelnadel)[^\n\d]{0,22}(\d(?:[,.]\d)?\s*(?:[-–]\s*\d(?:[,.]\d)?)?)\s*(?:mm)?/i)))out.needle=m[1].replace(/\s/g,'');
- const fibres=['Polyacryl','Acryl','Baumwolle','Merino','Schurwolle','Polyester','Polyamid','Viskose','Alpaka','Mohair','Seide','Leinen','Wolle'];const comps=[...t.matchAll(/(\d{1,3})\s*%\s*([A-Za-zÄÖÜäöüß]+)/g)].filter(x=>fibres.some(f=>x[2].toLowerCase().startsWith(f.toLowerCase()))).map(x=>x[1]+' % '+x[2]);if(comps.length)out.composition=comps.join(', ');
- }else{
- if((m=t.match(/(?:farb(?:e|nr\.?|nummer)?|color|colour|col\.?|art\.?\s*nr\.?)[\s:#-]*([A-Za-z0-9-]{2,24})/i)))out.code=m[1];
- if((m=t.match(/(?:partie|lot|batch|dyelot)[\s:#-]*([A-Za-z0-9-]{2,24})/i)))out.lot=m[1];
- }
- return out;
+
+function scanSuggestions(raw, collection) {
+  const t = String(raw || '')
+    .replace(/\r/g, '')
+    .replace(/--- Foto \d+ ---/g, '')
+    .replace(/\u00a0/g, ' ');
+
+  const out = {};
+  let m;
+
+  if (collection === 'yarns') {
+    const brands = [
+      'Woll Butt', 'Gründl', 'DROPS',
+      'Lana Grossa', 'Schachenmayr',
+      'Lang Yarns', 'Rico Design',
+      'Hobbii', 'ONline', 'Katia',
+      'Pro Lana', 'Scheepjes',
+      'Alize', 'YarnArt'
+    ];
+
+    for (const brand of brands) {
+      if (t.toLowerCase().includes(brand.toLowerCase())) {
+        out.brand = brand;
+        break;
+      }
+    }
+
+    const lines = t.split('\n')
+      .map(x => x.trim())
+      .filter(Boolean);
+
+    if (out.brand) {
+      const index = lines.findIndex(x =>
+        x.toLowerCase().includes(out.brand.toLowerCase())
+      );
+
+      if (index >= 0) {
+        let name = lines[index]
+          .replace(out.brand, '')
+          .trim();
+
+        if (!name && lines[index + 1]) {
+          name = lines[index + 1];
+        }
+
+        if (name && name.length < 60) {
+          out.name = name;
+        }
+      }
+    }
+
+    // Beispiel: Woll Butt COLIN
+    if (/woll\s*butt/i.test(t) && /\bcolin\b/i.test(t)) {
+      out.brand = 'Woll Butt';
+      out.name = 'Colin';
+    }
+
+    // Gewicht und Lauflänge
+    m = t.match(
+      /(\d{2,4})\s*g\s*[=≈~:-]*\s*(?:ca\.?\s*)?(\d{2,4})\s*m\b/i
+    );
+
+    if (m) {
+      out.weight = m[1];
+      out.length = m[2];
+    } else {
+      m = t.match(/\b(25|50|100|150|200|250|500)\s*g\b/i);
+      if (m) out.weight = m[1];
+
+      m = t.match(/\b(\d{2,4})\s*m\b/i);
+      if (m) out.length = m[1];
+    }
+
+    // Materialzusammensetzung
+    const fibres = [
+      'Polyacryl', 'Polyamid', 'Polyester',
+      'Baumwolle', 'Schurwolle', 'Merino',
+      'Alpaka', 'Viskose', 'Mohair',
+      'Seide', 'Leinen', 'Acryl', 'Wolle'
+    ];
+
+    const matches = [
+      ...t.matchAll(
+        /(\d{1,3})\s*%\s*([A-Za-zÄÖÜäöüß]+)/g
+      )
+    ];
+
+    const composition = matches
+      .filter(x =>
+        fibres.some(f =>
+          x[2].toLowerCase() === f.toLowerCase()
+        )
+      )
+      .map(x => `${x[1]} % ${x[2]}`);
+
+    if (composition.length) {
+      out.composition = [...new Set(composition)].join(', ');
+    }
+
+    // Nadelstärke
+    m = t.match(
+      /(?:nadel(?:stärke)?|needle|hook)\s*[:\-]?\s*(\d(?:[,.]\d)?(?:\s*[-–]\s*\d(?:[,.]\d)?)?)/i
+    );
+
+    if (m) {
+      out.needle = m[1].replace(/\s/g, '');
+    }
+
+    // Maschenprobe
+    m = t.match(
+      /(\d{1,2})\s*M(?:aschen)?\s*[x×\/]\s*(\d{1,2})\s*R(?:eihen)?/i
+    );
+
+    if (m) {
+      out.gauge = `${m[1]} M × ${m[2]} R`;
+    }
+
+  } else if (collection === 'colors') {
+
+    // Farbnummer: FARBE, COLOR, COLOUR
+    m = t.match(
+      /(?:FARBE|FARB-NR\.?|FARBNUMMER|COLOR|COLOUR)\s*[:#.\-]?\s*(\d{2,12})/i
+    );
+
+    if (m) {
+      out.code = m[1];
+    }
+
+    // Farbpartie: PARTIE, LOT, BATCH
+    m = t.match(
+      /(?:PARTIE|PARTIENR\.?|LOT|BATCH|DYE\s*LOT)\s*[:#.\-]?\s*(\d{2,12})/i
+    );
+
+    if (m) {
+      out.lot = m[1];
+    }
+
+    // Artikelnummer nicht als Farbnummer verwenden
+    // Artikelnummer und EAN bleiben getrennte Angaben.
+  }
+
+  return out;
 }
+
 
 render();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
